@@ -27,7 +27,6 @@ import (
 	"sync"
 	"time"
 
-	myrpc "github.com/Terry-Mao/gosnowflake/rpc"
 	log "github.com/golang/glog"
 	"github.com/samuel/go-zookeeper/zk"
 )
@@ -54,6 +53,11 @@ var (
 	// worker
 	workerIdMap = map[int64]*Client{}
 )
+
+type NextIdsArgs struct {
+	WorkerId int64 // snowflake worker id
+	Num      int   // batch next id number
+}
 
 // Init init the gosnowflake client.
 func Init(zservers []string, zpath string, ztimeout time.Duration) (err error) {
@@ -130,7 +134,7 @@ func (c *Client) Ids(num int) (ids []int64, err error) {
 	if err != nil {
 		return
 	}
-	if err = client.Call(RPCNextIds, &myrpc.NextIdsArgs{WorkerId: c.workerId, Num: num}, &ids); err != nil {
+	if err = client.Call(RPCNextIds, &NextIdsArgs{WorkerId: c.workerId, Num: num}, &ids); err != nil {
 		log.Error("rpc.Call(\"%s\", %d, &id) error(%v)", RPCNextId, c.workerId, err)
 	}
 	return
